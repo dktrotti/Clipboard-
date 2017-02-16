@@ -1,0 +1,22 @@
+﻿<Window x:Class="Clipboard__.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Clipboard__"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="328.431" Width="251.471" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual">
+    <Grid>
+        <StackPanel HorizontalAlignment="Left" Height="100" Margin="195,-20,0,0" VerticalAlignment="Top" Width="100"/>
+        <ListView x:Name="cbItemListView" Margin="6,6,6,259">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <TextBox x:Name="textBox" TextWrapping="Wrap" Text="No hotkeys yet..." Margin="29,57,21,210"/>
+        <local:KeyboardHook HorizontalAlignment="Left" Height="100" Margin="58,129,0,0" VerticalAlignment="Top" Width="100"/>
+
+    </Grid>
+</Window>
