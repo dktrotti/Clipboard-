@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Clipboard__"
         mc:Ignorable="d"
-        Title="MainWindow" Height="328.431" Width="251.471" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual">
+        Title="MainWindow" Height="328.431" Width="251.471" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual" LostKeyboardFocus="Window_LostKeyboardFocus">
     <Grid>
         <StackPanel HorizontalAlignment="Left" Height="100" Margin="195,-20,0,0" VerticalAlignment="Top" Width="100"/>
         <ListView x:Name="cbItemListView" Margin="6,6,6,259">
@@ -15,7 +15,7 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBox x:Name="textBox" TextWrapping="Wrap" Text="No hotkeys yet..." Margin="29,57,21,210"/>
+        <TextBox x:Name="textBox" TextWrapping="Wrap" Text="Nothing yet..." Margin="29,57,21,210"/>
 
     </Grid>
 </Window>

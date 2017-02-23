@@ -24,6 +24,19 @@ namespace Clipboard__ {
         private HwndSource _source;
         private Dictionary<int, Hotkey> hotkeys;
 
+        private class NativeMethods {
+            // Registers a hot key with Windows.
+            [DllImport("user32.dll")]
+            public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+            // Unregisters the hot key with Windows.
+            [DllImport("user32.dll")]
+            public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+            // See http://msdn.microsoft.com/en-us/library/ms632599%28VS.85%29.aspx#message_only
+            [DllImport("user32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+        }
+
         public MainWindow() {
             InitializeComponent();
 
@@ -38,6 +51,8 @@ namespace Clipboard__ {
 
             const uint VK_V = 0x56;
             RegisterHotKey(new Hotkey(ModifierKeys.Alt | ModifierKeys.Control, VK_V, focusHotkeyPressed));
+
+            AddClipboardListener();
         }
 
         protected override void OnClosed(EventArgs e) {
@@ -63,8 +78,14 @@ namespace Clipboard__ {
             }
         }
 
+        private void AddClipboardListener() {
+            var helper = new WindowInteropHelper(this);
+            NativeMethods.AddClipboardFormatListener(helper.Handle);
+        }
+
         private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
             const int WM_HOTKEY = 0x0312;
+            const int WM_CLIPBOARDUPDATE = 0x031D;
             switch (msg) {
                 case WM_HOTKEY:
                     int id = wParam.ToInt32();
@@ -74,21 +95,24 @@ namespace Clipboard__ {
                         // TODO: Do something
                     }
                     break;
+                case WM_CLIPBOARDUPDATE:
+                    if (Clipboard.ContainsText()) {
+                        this.textBox.Text = Clipboard.GetText();
+                    }
+                    break;
             }
             return IntPtr.Zero;
         }
 
         private void focusHotkeyPressed() {
-            this.textBox.Text = "Received hotkey!";
+            if (this.WindowState == WindowState.Minimized) {
+                this.WindowState = WindowState.Normal;
+                this.Activate();
+            }
         }
 
-        private class NativeMethods {
-            // Registers a hot key with Windows.
-            [DllImport("user32.dll")]
-            public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
-            // Unregisters the hot key with Windows.
-            [DllImport("user32.dll")]
-            public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+        private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
+            this.WindowState = WindowState.Minimized;
         }
     }
 }
