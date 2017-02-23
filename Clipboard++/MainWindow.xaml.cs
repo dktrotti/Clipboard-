@@ -16,6 +16,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+// Hotkeys based on solution here: http://stackoverflow.com/a/11378213
+// Clipboard based on solution here: http://stackoverflow.com/a/11901709
+
 namespace Clipboard__ {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
