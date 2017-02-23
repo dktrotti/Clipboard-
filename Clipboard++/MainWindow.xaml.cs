@@ -16,30 +16,79 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Clipboard__
-{
+namespace Clipboard__ {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
-    {
-        KeyboardHook kbhook;
+    public partial class MainWindow : Window {
+        private HwndSource _source;
+        private Dictionary<int, Hotkey> hotkeys;
 
-        public MainWindow()
-        {
+        public MainWindow() {
             InitializeComponent();
 
-            kbhook = new KeyboardHook();
-            kbhook.RegisterHotKey((ModifierKeys.Alt | ModifierKeys.Control), Key.V);
-            kbhook.KeyPressed += onHotkeyReceived;
+            hotkeys = new Dictionary<int, Hotkey>();
         }
 
-        private void onHotkeyReceived(object sender, KeyPressedEventArgs e)
-        {
-            if ((e.Modifier == (ModifierKeys.Alt | ModifierKeys.Control)) && (e.Key == Key.V))
-            {
-                this.textBox.Text = "Received hotkey!";
+        protected override void OnSourceInitialized(EventArgs e) {
+            base.OnSourceInitialized(e);
+            var helper = new WindowInteropHelper(this);
+            _source = HwndSource.FromHwnd(helper.Handle);
+            _source.AddHook(HwndHook);
+
+            const uint VK_V = 0x56;
+            RegisterHotKey(new Hotkey(ModifierKeys.Alt | ModifierKeys.Control, VK_V, focusHotkeyPressed));
+        }
+
+        protected override void OnClosed(EventArgs e) {
+            _source.RemoveHook(HwndHook);
+            _source = null;
+            UnregisterHotKeys();
+            base.OnClosed(e);
+        }
+
+        private void RegisterHotKey(Hotkey hotkey) {
+            var helper = new WindowInteropHelper(this);
+            if (!NativeMethods.RegisterHotKey(helper.Handle, hotkey.Id, hotkey.Modifier, hotkey.Key)) {
+                throw new InvalidOperationException("Couldn’t register the hot key.");
             }
+
+            hotkeys.Add(hotkey.Id, hotkey);
+        }
+
+        private void UnregisterHotKeys() {
+            var helper = new WindowInteropHelper(this);
+            foreach (Hotkey hotkey in hotkeys.Values) {
+                NativeMethods.UnregisterHotKey(helper.Handle, hotkey.Id);
+            }
+        }
+
+        private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled) {
+            const int WM_HOTKEY = 0x0312;
+            switch (msg) {
+                case WM_HOTKEY:
+                    int id = wParam.ToInt32();
+                    if (hotkeys.ContainsKey(id)) {
+                        hotkeys[id].Action();
+                    } else {
+                        // TODO: Do something
+                    }
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+
+        private void focusHotkeyPressed() {
+            this.textBox.Text = "Received hotkey!";
+        }
+
+        private class NativeMethods {
+            // Registers a hot key with Windows.
+            [DllImport("user32.dll")]
+            public static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
+            // Unregisters the hot key with Windows.
+            [DllImport("user32.dll")]
+            public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
         }
     }
 }

@@ -16,7 +16,6 @@
             </ListView.View>
         </ListView>
         <TextBox x:Name="textBox" TextWrapping="Wrap" Text="No hotkeys yet..." Margin="29,57,21,210"/>
-        <local:KeyboardHook HorizontalAlignment="Left" Height="100" Margin="58,129,0,0" VerticalAlignment="Top" Width="100"/>
 
     </Grid>
 </Window>
