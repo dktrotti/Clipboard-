@@ -56,6 +56,8 @@ namespace Clipboard__ {
             RegisterHotKey(new Hotkey(ModifierKeys.Alt | ModifierKeys.Control, VK_V, focusHotkeyPressed));
 
             AddClipboardListener();
+
+            this.cbItem.DataContext = new ClipboardListItem(Clipboard.GetDataObject(), null);
         }
 
         protected override void OnClosed(EventArgs e) {
