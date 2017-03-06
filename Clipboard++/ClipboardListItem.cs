@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Interop;
+using System.IO;
 
 namespace Clipboard__ {
-    class ClipboardListItem {
-        private IDataObject obj;
-        private ImageSource img;
-        private DateTime copytime;
+    abstract class ClipboardListItem {
+        protected IDataObject obj;
+        protected ImageSource img;
+        protected DateTime copytime;
+        protected string text;
 
-        public ClipboardListItem(IDataObject obj, ImageSource img) {
-            this.obj = obj;
-            this.img = img;
+        public ClipboardListItem() {
             this.copytime = DateTime.Now;
         }
 
@@ -29,14 +30,9 @@ namespace Clipboard__ {
             }
         }
 
-        public String Text {
+        public string Text {
             get {
-                var formats = obj.GetFormats();
-                if (formats.Contains(DataFormats.Text)) {
-                    return obj.GetData(DataFormats.Text).ToString();
-                } else {
-                    return "No preview text";
-                }
+                return text;
             }
         }
 
@@ -51,10 +47,77 @@ namespace Clipboard__ {
         }
     }
 
+    class ImageClipboardListItem : ClipboardListItem {
+        public ImageClipboardListItem(IDataObject obj) : base() {
+            this.obj = obj;
+            this.img = (obj.GetData(DataFormats.Bitmap, true) as InteropBitmap);
+            this.text = "Image";
+        }
+    }
+
+    class AudioClipboardListItem : ClipboardListItem {
+        public AudioClipboardListItem(IDataObject obj) : base() {
+            this.obj = obj;
+            this.img = new BitmapImage(new Uri("pack://application:,,,/images/audio.png"));
+            this.text = "Audio";
+        }
+    }
+
+    class FileClipboardListItem : ClipboardListItem {
+        public FileClipboardListItem(IDataObject obj) : base() {
+            this.obj = obj;
+            this.img = new BitmapImage(new Uri("pack://application:,,,/images/folder.png"));
+            var file = (obj.GetData(DataFormats.FileDrop) as string[]);
+            this.text = getFileNames(file);
+        }
+
+        private static string getFileNames(string[] files) {
+            if (files.Length == 0) {
+                throw new ArgumentException("No file names provided.");
+            }
+
+            var names = files.Select((file) => Path.GetFileName(file));
+            return names.Aggregate((s1, s2) => s1 + ", " + s2);
+        }
+    }
+
+    class TextClipboardListItem : ClipboardListItem {
+        public TextClipboardListItem(IDataObject obj) : base() {
+            this.obj = obj;
+            this.img = new BitmapImage(new Uri("pack://application:,,,/images/text.png"));
+            this.text = obj.GetData(DataFormats.UnicodeText).ToString();
+        }
+    }
+
+    class OtherClipboardListItem : ClipboardListItem {
+        public OtherClipboardListItem(IDataObject obj) : base() {
+            this.obj = obj;
+            this.img = new BitmapImage(new Uri("pack://application:,,,/images/unknown.png"));
+
+            var formats = obj.GetFormats(true);
+            if (formats.Contains(DataFormats.UnicodeText)) {
+                this.text = obj.GetData(DataFormats.UnicodeText).ToString();
+            } else {
+                this.text = "No preview text";
+            }
+        }
+    }
+
     class ClipboardListItemFactory {
         public static ClipboardListItem CreateItem(IDataObject obj) {
+            var formats = obj.GetFormats(true);
 
+            if (formats.Contains(DataFormats.Bitmap)) {
+                return new ImageClipboardListItem(obj);
+            } else if (formats.Contains(DataFormats.WaveAudio)) {
+                return new AudioClipboardListItem(obj);
+            } else if (formats.Contains(DataFormats.FileDrop)) {
+                return new FileClipboardListItem(obj);
+            } else if (formats.Contains(DataFormats.UnicodeText)) {
+                return new TextClipboardListItem(obj);
+            } else {
+                return new OtherClipboardListItem(obj);
+            }
         }
-        //new BitmapImage(new Uri("pack://application:,,,/images/text.png"))
     }
 }

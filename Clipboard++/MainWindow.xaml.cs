@@ -57,7 +57,8 @@ namespace Clipboard__ {
 
             AddClipboardListener();
 
-            this.cbItem.DataContext = new ClipboardListItem(Clipboard.GetDataObject(), null);
+            this.cbItem.DataContext = ClipboardListItemFactory.CreateItem(Clipboard.GetDataObject());
+            this.InvalidateVisual();
         }
 
         protected override void OnClosed(EventArgs e) {
@@ -104,6 +105,7 @@ namespace Clipboard__ {
                     if (Clipboard.ContainsText()) {
                         this.textBox.Text = Clipboard.GetText();
                     }
+                    this.cbItem.DataContext = ClipboardListItemFactory.CreateItem(Clipboard.GetDataObject());
                     break;
             }
             return IntPtr.Zero;
