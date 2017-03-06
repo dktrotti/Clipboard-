@@ -5,18 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Clipboard__"
         mc:Ignorable="d"
-        Title="MainWindow" Height="320.588" Width="276.961" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual" LostKeyboardFocus="Window_LostKeyboardFocus">
+        Title="Clipboard++" Height="420" Width="340" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual">
+    <Window.Resources>
+        <DataTemplate x:Key="cbItemTemplate">
+            <Grid Height="60" Margin="0,0,0,0"  HorizontalAlignment="Stretch">
+                <Image x:Name="thumbnailImage" HorizontalAlignment="Left" Height="30" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Source="{Binding Image, Mode=OneWay}"/>
+                <TextBlock x:Name="previewTextBlock" Margin="50,5,5,22" TextWrapping="Wrap" Text="{Binding Text, Mode=OneWay}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis"/>
+                <TextBlock x:Name="dateTextBlock" HorizontalAlignment="Right" Margin="0,0,5,5" TextWrapping="Wrap" Text="{Binding Copytime, Mode=OneWay, StringFormat=t}" VerticalAlignment="Bottom" Height="14" FontSize="9" TextAlignment="Right"/>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
-        <StackPanel HorizontalAlignment="Left" Height="100" Margin="195,-20,0,0" VerticalAlignment="Top" Width="100"/>
-        <ListView x:Name="cbItemListView" Margin="6,6,6,259">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn/>
-                </GridView>
-            </ListView.View>
-        </ListView>
-        <TextBox x:Name="textBox" TextWrapping="Wrap" Text="Nothing yet..." Margin="29,57,21,210"/>
-        <local:ClipboardItem x:Name="cbItem" HorizontalAlignment="Left" Margin="24,133,0,0" VerticalAlignment="Top" Height="40" Width="200"/>
-
+        <ListBox x:Name="cbItemsListBox" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" ItemTemplate="{StaticResource cbItemTemplate}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="cbItemsListBox_SelectionChanged"/>
     </Grid>
 </Window>

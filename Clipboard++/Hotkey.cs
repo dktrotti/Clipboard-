@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Clipboard__ {
     class Hotkey {
-        static int currentId = 0;
+        private static int currentId = 0;
 
         private uint modifier;
         private uint key;

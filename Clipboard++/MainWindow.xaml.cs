@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -26,6 +27,8 @@ namespace Clipboard__ {
     public partial class MainWindow : Window {
         private HwndSource _source;
         private Dictionary<int, Hotkey> hotkeys;
+        private ObservableCollection<ClipboardItem> clipboardItems;
+        private bool updatingSelection = false;
 
         private class NativeMethods {
             // Registers a hot key with Windows.
@@ -44,6 +47,7 @@ namespace Clipboard__ {
             InitializeComponent();
 
             hotkeys = new Dictionary<int, Hotkey>();
+            clipboardItems = new ObservableCollection<ClipboardItem>();
         }
 
         protected override void OnSourceInitialized(EventArgs e) {
@@ -57,8 +61,8 @@ namespace Clipboard__ {
 
             AddClipboardListener();
 
-            this.cbItem.DataContext = ClipboardListItemFactory.CreateItem(Clipboard.GetDataObject());
-            this.InvalidateVisual();
+            this.cbItemsListBox.ItemsSource = clipboardItems;
+            addCurrentClipboard();
         }
 
         protected override void OnClosed(EventArgs e) {
@@ -102,24 +106,45 @@ namespace Clipboard__ {
                     }
                     break;
                 case WM_CLIPBOARDUPDATE:
-                    if (Clipboard.ContainsText()) {
-                        this.textBox.Text = Clipboard.GetText();
-                    }
-                    this.cbItem.DataContext = ClipboardListItemFactory.CreateItem(Clipboard.GetDataObject());
+                    addCurrentClipboard();
                     break;
             }
             return IntPtr.Zero;
         }
 
+        private void addCurrentClipboard() {
+            var obj = Clipboard.GetDataObject();
+
+            if (obj.GetDataPresent(ClipboardItem.CUSTOM_FORMAT)) {
+                // This data has been pasted by the application
+                return;
+            }
+            
+            var cbItem = ClipboardItemFactory.CreateItem(obj);
+            clipboardItems.Insert(0, cbItem);
+
+            updatingSelection = true;
+            cbItemsListBox.SelectedIndex = 0;
+            cbItemsListBox.ScrollIntoView(cbItem);
+            updatingSelection = false;
+        }
+
         private void focusHotkeyPressed() {
             if (this.WindowState == WindowState.Minimized) {
                 this.WindowState = WindowState.Normal;
-                this.Activate();
             }
+            this.Activate();
         }
 
         private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
             this.WindowState = WindowState.Minimized;
+        }
+
+        private void cbItemsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (!updatingSelection) {
+                var cbItem = cbItemsListBox.SelectedItem as ClipboardItem;
+                Clipboard.SetDataObject(cbItem.Data);
+            }
         }
     }
 }
