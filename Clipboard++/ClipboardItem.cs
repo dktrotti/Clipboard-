@@ -8,18 +8,33 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Interop;
 using System.IO;
+using System.Reflection;
 
 namespace Clipboard__ {
     abstract class ClipboardItem {
-        protected IDataObject obj;
+        protected Dictionary<string, object> data;
         protected ImageSource img;
         protected DateTime copytime;
         protected string text;
 
+        // Limiting the allowed formats to the defaults helps prevent performance issues due to delayed rendering
+        // See here: https://msdn.microsoft.com/en-us/library/windows/desktop/ms649014(v=vs.85).aspx#_win32_Delayed_Rendering
+        // Also: http://stackoverflow.com/a/2579846
+        protected static readonly string[] ALLOWED_FORMATS = typeof(DataFormats).GetFields(BindingFlags.Public | BindingFlags.Static)
+                                                                .Where(f => f.FieldType == typeof(string))
+                                                                .Select(f => f.GetValue(null) as string)
+                                                                .ToArray();
+
         public const string CUSTOM_FORMAT = "Clipboard++DataFormat";
 
-        public ClipboardItem() {
+        public ClipboardItem(IDataObject obj) {
+            data = new Dictionary<string, object>();
             this.copytime = DateTime.Now;
+
+            var formats = obj.GetFormats(false);
+            foreach (var format in formats.Intersect(ALLOWED_FORMATS)) {
+                data[format] = obj.GetData(format);
+            }
         }
 
         public DateTime Copytime {
@@ -48,69 +63,39 @@ namespace Clipboard__ {
             }
         }
 
-        public abstract IDataObject Data {
-            get;
+        public IDataObject Data {
+            get {
+                var rv = new DataObject();
+
+                foreach (var entry in data) {
+                    rv.SetData(entry.Key, entry.Value);
+                }
+                rv.SetData(CUSTOM_FORMAT, 1);
+
+                return rv;
+            }
         }
     }
 
     class ImageClipboardItem : ClipboardItem {
-        public ImageClipboardItem(IDataObject obj) : base() {
-            this.obj = obj;
+        public ImageClipboardItem(IDataObject obj) : base(obj) {
             this.img = (obj.GetData(DataFormats.Bitmap, true) as InteropBitmap);
             this.text = "Image";
-        }
-
-        public override IDataObject Data {
-            get {
-                var rv = new DataObject();
-
-                rv.SetData(DataFormats.Bitmap, this.obj.GetData(DataFormats.Bitmap, true));
-                // Format used as marker to indicate that this data comes from Clipboard++
-                rv.SetData(CUSTOM_FORMAT, 1);
-
-                return rv;
-            }
         }
     }
 
     class AudioClipboardItem : ClipboardItem {
-        public AudioClipboardItem(IDataObject obj) : base() {
-            this.obj = obj;
+        public AudioClipboardItem(IDataObject obj) : base(obj) {
             this.img = new BitmapImage(new Uri("pack://application:,,,/images/audio.png"));
             this.text = "Audio";
-        }
-
-        public override IDataObject Data {
-            get {
-                var rv = new DataObject();
-
-                rv.SetData(DataFormats.WaveAudio, this.obj.GetData(DataFormats.WaveAudio, true));
-                // Format used as marker to indicate that this data comes from Clipboard++
-                rv.SetData(CUSTOM_FORMAT, 1);
-
-                return rv;
-            }
         }
     }
 
     class FileClipboardItem : ClipboardItem {
-        public FileClipboardItem(IDataObject obj) : base() {
-            this.obj = obj;
+        public FileClipboardItem(IDataObject obj) : base(obj) {
             this.img = new BitmapImage(new Uri("pack://application:,,,/images/folder.png"));
             var file = (obj.GetData(DataFormats.FileDrop) as string[]);
             this.text = getFileNames(file);
-        }
-
-        public override IDataObject Data {
-            get {
-                var rv = new DataObject();
-
-                rv.SetData(DataFormats.FileDrop, this.obj.GetData(DataFormats.FileDrop, true));
-                // Format used as marker to indicate that this data comes from Clipboard++
-                rv.SetData(CUSTOM_FORMAT, 1);
-
-                return rv;
-            }
         }
 
         private static string getFileNames(string[] files) {
@@ -124,28 +109,14 @@ namespace Clipboard__ {
     }
 
     class TextClipboardItem : ClipboardItem {
-        public TextClipboardItem(IDataObject obj) : base() {
-            this.obj = obj;
+        public TextClipboardItem(IDataObject obj) : base(obj) {
             this.img = new BitmapImage(new Uri("pack://application:,,,/images/text.png"));
             this.text = obj.GetData(DataFormats.UnicodeText, true).ToString();
-        }
-
-        public override IDataObject Data {
-            get {
-                var rv = new DataObject();
-                
-                rv.SetData(DataFormats.UnicodeText, this.obj.GetData(DataFormats.UnicodeText, true));
-                // Format used as marker to indicate that this data comes from Clipboard++
-                rv.SetData(CUSTOM_FORMAT, 1);
-
-                return rv;
-            }
         }
     }
 
     class OtherClipboardItem : ClipboardItem {
-        public OtherClipboardItem(IDataObject obj) : base() {
-            this.obj = obj;
+        public OtherClipboardItem(IDataObject obj) : base(obj) {
             this.img = new BitmapImage(new Uri("pack://application:,,,/images/unknown.png"));
 
             var formats = obj.GetFormats(true);
@@ -153,12 +124,6 @@ namespace Clipboard__ {
                 this.text = obj.GetData(DataFormats.UnicodeText).ToString();
             } else {
                 this.text = "No preview text";
-            }
-        }
-
-        public override IDataObject Data {
-            get {
-                return null;
             }
         }
     }
@@ -176,9 +141,7 @@ namespace Clipboard__ {
             } else if (formats.Contains(DataFormats.UnicodeText)) {
                 return new TextClipboardItem(obj);
             } else {
-                Console.WriteLine("Unrecognized clipboard item.");
-                return null;
-                //return new OtherClipboardItem(obj);
+                return new OtherClipboardItem(obj);
             }
         }
     }
