@@ -31,7 +31,6 @@ namespace Clipboard__ {
         private Dictionary<int, Hotkey> hotkeys;
         private ObservableCollection<ClipboardItem> clipboardItems;
         private bool updatingSelection = false;
-        private bool quitting = false;
 
         private class NativeMethods {
             // Registers a hot key with Windows.
@@ -145,9 +144,7 @@ namespace Clipboard__ {
         }
 
         private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
-            if (!quitting) {
-                this.WindowState = WindowState.Minimized;
-            }
+            this.WindowState = WindowState.Minimized;
         }
 
         private void cbItemsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -165,14 +162,15 @@ namespace Clipboard__ {
         }
 
         private void Quit_Click(object sender, RoutedEventArgs e) {
-            quitting = true;
+            this.Close();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             var res = MessageBox.Show(this, "Are you sure you want to quit Clipboard++? All stored items will be lost.", "Clipboard++", MessageBoxButton.OKCancel);
 
-            if (res == MessageBoxResult.OK) {
-                this.Close();
-                
+            if (res != MessageBoxResult.OK) {
+                e.Cancel = true;
             }
-            quitting = false;
         }
     }
 }
