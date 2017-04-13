@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Clipboard__"
         xmlns:tb="http://www.hardcodet.net/taskbar" 
         mc:Ignorable="d"
-        Title="Clipboard++" Height="420" Width="340" ResizeMode="NoResize" Visibility="Visible" WindowStyle="ToolWindow" SnapsToDevicePixels="True" WindowStartupLocation="Manual" ShowInTaskbar="False" Closing="Window_Closing">
+        Title="Clipboard++" Height="420" Width="340" ResizeMode="NoResize" Visibility="Visible" SnapsToDevicePixels="True" WindowStartupLocation="Manual" ShowInTaskbar="False" Closing="Window_Closing" Background="#FF787878" Opacity="0.8" WindowStyle="None" AllowsTransparency="True" Loaded="Window_Loaded" KeyDown="Window_KeyDown">
     <Window.Resources>
         <DataTemplate x:Key="cbItemTemplate">
             <Grid Height="60" Margin="0,0,0,0"  HorizontalAlignment="Stretch">
@@ -17,7 +17,7 @@
         </DataTemplate>
     </Window.Resources>
     <Grid>
-        <ListBox x:Name="cbItemsListBox" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" ItemTemplate="{StaticResource cbItemTemplate}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="cbItemsListBox_SelectionChanged"/>
+        <ListBox x:Name="cbItemsListBox" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" ItemTemplate="{StaticResource cbItemTemplate}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="cbItemsListBox_SelectionChanged" Background="{x:Null}" Opacity="0.8"/>
         <tb:TaskbarIcon IconSource="/images/clipboard.ico" ToolTipText="Clipboard++" Visibility="Visible">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>

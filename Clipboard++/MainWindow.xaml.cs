@@ -137,10 +137,14 @@ namespace Clipboard__ {
         }
 
         private void focusHotkeyPressed() {
-            if (this.WindowState == WindowState.Minimized) {
-                this.WindowState = WindowState.Normal;
+            if (this.IsKeyboardFocused) {
+                this.cbItemsListBox.SelectedIndex = (this.cbItemsListBox.SelectedIndex + 1) % this.cbItemsListBox.Items.Count;
+            } else {
+                if (this.WindowState == WindowState.Minimized) {
+                    this.WindowState = WindowState.Normal;
+                }
+                this.Activate();
             }
-            this.Activate();
         }
 
         private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
@@ -170,6 +174,25 @@ namespace Clipboard__ {
 
             if (res != MessageBoxResult.OK) {
                 e.Cancel = true;
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e) {
+            // Found here: http://stackoverflow.com/a/9495851
+            var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+            this.Left = desktopWorkingArea.Right - this.Width;
+            this.Top = desktopWorkingArea.Bottom - this.Height;
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Down) {
+                this.cbItemsListBox.SelectedIndex = (this.cbItemsListBox.SelectedIndex + 1) % this.cbItemsListBox.Items.Count;
+            } else if (e.Key == Key.Up) {
+                if (this.cbItemsListBox.SelectedIndex == 0) {
+                    this.cbItemsListBox.SelectedIndex = this.cbItemsListBox.Items.Count - 1;
+                } else {
+                    this.cbItemsListBox.SelectedIndex = this.cbItemsListBox.SelectedIndex - 1;
+                }
             }
         }
     }
