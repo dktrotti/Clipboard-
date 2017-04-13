@@ -21,8 +21,8 @@
         <tb:TaskbarIcon IconSource="/images/clipboard.ico" ToolTipText="Clipboard++" Visibility="Visible">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Open" Click="Open_Click" />
-                    <MenuItem Header="Quit" Click="Quit_Click" />
+                    <MenuItem Header="Open Clipboard++" Click="Open_Click" />
+                    <MenuItem Header="Quit Clipboard++" Click="Quit_Click" />
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
