@@ -25,7 +25,7 @@ namespace Clipboard__ {
                                                                 .Select(f => f.GetValue(null) as string)
                                                                 .ToArray();
 
-        public const string CUSTOM_FORMAT = "Clipboard++DataFormat";
+        public const string APP_CUSTOM_FORMAT = "Clipboard++DataFormat";
 
         public ClipboardItem(IDataObject obj) {
             data = new Dictionary<string, object>();
@@ -70,7 +70,7 @@ namespace Clipboard__ {
                 foreach (var entry in data) {
                     rv.SetData(entry.Key, entry.Value);
                 }
-                rv.SetData(CUSTOM_FORMAT, 1);
+                rv.SetData(APP_CUSTOM_FORMAT, 1);
 
                 return rv;
             }
@@ -132,6 +132,10 @@ namespace Clipboard__ {
         public static ClipboardItem CreateItem(IDataObject obj) {
             var formats = obj.GetFormats(true);
 
+            if (formats.Length == 0) {
+                throw new EmptyClipboardException();
+            }
+
             if (formats.Contains(DataFormats.Bitmap)) {
                 return new ImageClipboardItem(obj);
             } else if (formats.Contains(DataFormats.WaveAudio)) {
@@ -144,5 +148,9 @@ namespace Clipboard__ {
                 return new OtherClipboardItem(obj);
             }
         }
+    }
+
+    class EmptyClipboardException : Exception {
+
     }
 }

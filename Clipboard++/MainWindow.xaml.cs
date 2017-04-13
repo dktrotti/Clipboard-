@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Hardcodet.Wpf.TaskbarNotification;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -29,6 +31,7 @@ namespace Clipboard__ {
         private Dictionary<int, Hotkey> hotkeys;
         private ObservableCollection<ClipboardItem> clipboardItems;
         private bool updatingSelection = false;
+        private bool quitting = false;
 
         private class NativeMethods {
             // Registers a hot key with Windows.
@@ -115,18 +118,23 @@ namespace Clipboard__ {
         private void addCurrentClipboard() {
             var obj = Clipboard.GetDataObject();
 
-            if (obj.GetDataPresent(ClipboardItem.CUSTOM_FORMAT)) {
+            if (obj.GetDataPresent(ClipboardItem.APP_CUSTOM_FORMAT)) {
                 // This data has been pasted by the application
                 return;
             }
-            
-            var cbItem = ClipboardItemFactory.CreateItem(obj);
-            clipboardItems.Insert(0, cbItem);
 
-            updatingSelection = true;
-            cbItemsListBox.SelectedIndex = 0;
-            cbItemsListBox.ScrollIntoView(cbItem);
-            updatingSelection = false;
+            try {
+                var cbItem = ClipboardItemFactory.CreateItem(obj);
+                clipboardItems.Insert(0, cbItem);
+
+                updatingSelection = true;
+                cbItemsListBox.SelectedIndex = 0;
+                cbItemsListBox.ScrollIntoView(cbItem);
+                updatingSelection = false;
+            } catch (EmptyClipboardException) {
+                // Nothing needs to be done if the clipboard is empty
+                return;
+            }
         }
 
         private void focusHotkeyPressed() {
@@ -137,7 +145,9 @@ namespace Clipboard__ {
         }
 
         private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
-            this.WindowState = WindowState.Minimized;
+            if (!quitting) {
+                this.WindowState = WindowState.Minimized;
+            }
         }
 
         private void cbItemsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -145,6 +155,24 @@ namespace Clipboard__ {
                 var cbItem = cbItemsListBox.SelectedItem as ClipboardItem;
                 Clipboard.SetDataObject(cbItem.Data);
             }
+        }
+
+        private void Open_Click(object sender, RoutedEventArgs e) {
+            if (this.WindowState == WindowState.Minimized) {
+                this.WindowState = WindowState.Normal;
+            }
+            this.Activate();
+        }
+
+        private void Quit_Click(object sender, RoutedEventArgs e) {
+            quitting = true;
+            var res = MessageBox.Show(this, "Are you sure you want to quit Clipboard++? All stored items will be lost.", "Clipboard++", MessageBoxButton.OKCancel);
+
+            if (res == MessageBoxResult.OK) {
+                this.Close();
+                
+            }
+            quitting = false;
         }
     }
 }
