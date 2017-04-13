@@ -31,6 +31,7 @@ namespace Clipboard__ {
         private Dictionary<int, Hotkey> hotkeys;
         private ObservableCollection<ClipboardItem> clipboardItems;
         private bool updatingSelection = false;
+        private const int MAX_CB_ITEMS = 30;
 
         private class NativeMethods {
             // Registers a hot key with Windows.
@@ -123,10 +124,15 @@ namespace Clipboard__ {
             }
 
             try {
+                updatingSelection = true;
+
+                if (clipboardItems.Count >= MAX_CB_ITEMS) {
+                    clipboardItems.RemoveAt(clipboardItems.Count - 1);
+                }
+
                 var cbItem = ClipboardItemFactory.CreateItem(obj);
                 clipboardItems.Insert(0, cbItem);
 
-                updatingSelection = true;
                 cbItemsListBox.SelectedIndex = 0;
                 cbItemsListBox.ScrollIntoView(cbItem);
                 updatingSelection = false;
@@ -155,6 +161,7 @@ namespace Clipboard__ {
             if (!updatingSelection) {
                 var cbItem = cbItemsListBox.SelectedItem as ClipboardItem;
                 Clipboard.SetDataObject(cbItem.Data);
+                cbItemsListBox.ScrollIntoView(cbItem);
             }
         }
 
