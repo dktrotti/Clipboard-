@@ -13,27 +13,14 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.If not, see<http://www.gnu.org/licenses/>.
 
-using Hardcodet.Wpf.TaskbarNotification;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using WindowsDesktop;
 
 // Hotkeys based on solution here: http://stackoverflow.com/a/11378213
 // Clipboard based on solution here: http://stackoverflow.com/a/11901709
@@ -81,7 +68,7 @@ namespace Clipboard__ {
 
             AddClipboardListener();
 
-            this.cbItemsListBox.ItemsSource = clipboardItems;
+            cbItemsListBox.ItemsSource = clipboardItems;
             addCurrentClipboard();
         }
 
@@ -122,7 +109,7 @@ namespace Clipboard__ {
                     if (hotkeys.ContainsKey(id)) {
                         hotkeys[id].Action();
                     } else {
-                        // TODO: Do something
+                        // TODO: Figure out if anything needs to be done, or if this case is even possible
                     }
                     break;
                 case WM_CLIPBOARDUPDATE:
@@ -160,15 +147,30 @@ namespace Clipboard__ {
         }
 
         private void focusHotkeyPressed() {
-            if (this.IsKeyboardFocused) {
-                this.cbItemsListBox.SelectedIndex = (this.cbItemsListBox.SelectedIndex + 1) % this.cbItemsListBox.Items.Count;
+            if (IsKeyboardFocused) {
+                cbItemsListBox.SelectedIndex = (cbItemsListBox.SelectedIndex + 1) % cbItemsListBox.Items.Count;
             } else {
                 makeVisible();
             }
         }
 
         private void Window_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) {
-            this.WindowState = WindowState.Minimized;
+            WindowState = WindowState.Minimized;
+        }
+
+        private void makeVisible() {
+            var vdm = new VirtualDesktopManager();
+            var helper = new WindowInteropHelper(this);
+
+            if (!vdm.IsWindowOnCurrentVirtualDesktop(helper.Handle)) {
+                vdm.MoveWindowToDesktop(helper.Handle, vdm.GetCurrentDesktopId());
+            }
+
+            if (WindowState == WindowState.Minimized) {
+                WindowState = WindowState.Normal;
+            }
+
+            Activate();
         }
 
         private void cbItemsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -184,7 +186,7 @@ namespace Clipboard__ {
         }
 
         private void Quit_Click(object sender, RoutedEventArgs e) {
-            this.Close();
+            Close();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -198,49 +200,34 @@ namespace Clipboard__ {
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             // Found here: http://stackoverflow.com/a/9495851
             var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
-            this.Left = desktopWorkingArea.Right - this.Width;
-            this.Top = desktopWorkingArea.Bottom - this.Height;
+            Left = desktopWorkingArea.Right - Width;
+            Top = desktopWorkingArea.Bottom - Height;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Down) {
-                this.cbItemsListBox.SelectedIndex = (this.cbItemsListBox.SelectedIndex + 1) % this.cbItemsListBox.Items.Count;
+                cbItemsListBox.SelectedIndex = (cbItemsListBox.SelectedIndex + 1) % cbItemsListBox.Items.Count;
             } else if (e.Key == Key.Up) {
-                if (this.cbItemsListBox.SelectedIndex == 0) {
-                    this.cbItemsListBox.SelectedIndex = this.cbItemsListBox.Items.Count - 1;
+                if (cbItemsListBox.SelectedIndex == 0) {
+                    cbItemsListBox.SelectedIndex = cbItemsListBox.Items.Count - 1;
                 } else {
-                    this.cbItemsListBox.SelectedIndex = this.cbItemsListBox.SelectedIndex - 1;
+                    cbItemsListBox.SelectedIndex = cbItemsListBox.SelectedIndex - 1;
                 }
             }
         }
 
-        private void makeVisible() {
-            var vdm = new VirtualDesktopManager();
-            var helper = new WindowInteropHelper(this);
-
-            if (!vdm.IsWindowOnCurrentVirtualDesktop(helper.Handle)) {
-                vdm.MoveWindowToDesktop(helper.Handle, vdm.GetCurrentDesktopId());
-            }
-
-            //var desktops = VirtualDesktop.GetDesktops();
-            //this.MoveToDesktop(VirtualDesktop.Current);
-
-            if (this.WindowState == WindowState.Minimized) {
-                this.WindowState = WindowState.Normal;
-            }
-
-            this.Activate();
-        }
-
         private void Clear_Click(object sender, RoutedEventArgs e) {
+            // TODO: Implement clear
             throw new NotImplementedException();
         }
 
         private void Copy_Click(object sender, RoutedEventArgs e) {
+            // TODO: Implement copy
             throw new NotImplementedException();
         }
 
         private void Remove_Click(object sender, RoutedEventArgs e) {
+            // TODO: Implement remove
             throw new NotImplementedException();
         }
     }
