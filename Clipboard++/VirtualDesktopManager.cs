@@ -48,6 +48,12 @@ namespace Clipboard__ {
     }
 
     public class NewWindow : Window, IDisposable {
+        public NewWindow() {
+            this.Height = 1;
+            this.Width = 1;
+            this.Opacity = 0;
+        }
+
         public void Dispose() {
             this.Close();
             this.Dispose();
@@ -96,10 +102,14 @@ namespace Clipboard__ {
         }
 
         public Guid GetCurrentDesktopId() {
-            using (NewWindow nw = new NewWindow()) {
+            // GetWindowDesktopId doesn't work inside of a "using" block for some reason, "try finally" is used instead.
+            NewWindow nw = new NewWindow();
+            try {
                 nw.Show();
                 var helper = new WindowInteropHelper(nw);
                 return this.GetWindowDesktopId(helper.Handle);
+            } finally {
+                nw.Close();
             }
         }
     }

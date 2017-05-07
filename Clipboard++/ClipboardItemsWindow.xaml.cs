@@ -215,16 +215,19 @@ namespace Clipboard__ {
         }
 
         private void makeVisible() {
-            if (this.WindowState == WindowState.Minimized) {
-                this.WindowState = WindowState.Normal;
-            }
-
             var vdm = new VirtualDesktopManager();
             var helper = new WindowInteropHelper(this);
 
-            //vdm.MoveWindowToDesktop(helper.Handle, vdm.GetCurrentDesktopId());
-            var desktops = VirtualDesktop.GetDesktops();
+            if (!vdm.IsWindowOnCurrentVirtualDesktop(helper.Handle)) {
+                vdm.MoveWindowToDesktop(helper.Handle, vdm.GetCurrentDesktopId());
+            }
+
+            //var desktops = VirtualDesktop.GetDesktops();
             //this.MoveToDesktop(VirtualDesktop.Current);
+
+            if (this.WindowState == WindowState.Minimized) {
+                this.WindowState = WindowState.Normal;
+            }
 
             this.Activate();
         }

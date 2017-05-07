@@ -1,0 +1,13 @@
+﻿<Window x:Class="Clipboard__.TestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Clipboard__"
+        mc:Ignorable="d"
+        Title="TestWindow" Height="139.496" Width="181.513">
+    <Grid>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Left" Margin="67,47,0,0" TextWrapping="Wrap" Text="Hello" VerticalAlignment="Top" RenderTransformOrigin="-0.486,-2.081"/>
+
+    </Grid>
+</Window>
