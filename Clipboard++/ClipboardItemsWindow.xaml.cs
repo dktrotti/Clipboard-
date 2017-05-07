@@ -1,4 +1,19 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
+﻿//Copyright(C) 2017  Dominic Trottier
+
+//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+//GNU General Public License for more details.
+
+//You should have received a copy of the GNU General Public License
+//along with this program.If not, see<http://www.gnu.org/licenses/>.
+
+using Hardcodet.Wpf.TaskbarNotification;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +33,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WindowsDesktop;
 
 // Hotkeys based on solution here: http://stackoverflow.com/a/11378213
 // Clipboard based on solution here: http://stackoverflow.com/a/11901709
@@ -26,7 +42,7 @@ namespace Clipboard__ {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window {
+    public partial class ClipboardItemsWindow : Window {
         private HwndSource _source;
         private Dictionary<int, Hotkey> hotkeys;
         private ObservableCollection<ClipboardItem> clipboardItems;
@@ -46,7 +62,7 @@ namespace Clipboard__ {
             public static extern bool AddClipboardFormatListener(IntPtr hwnd);
         }
 
-        public MainWindow() {
+        public ClipboardItemsWindow() {
             InitializeComponent();
 
             hotkeys = new Dictionary<int, Hotkey>();
@@ -54,6 +70,7 @@ namespace Clipboard__ {
         }
 
         protected override void OnSourceInitialized(EventArgs e) {
+            // TODO: Make this a single instance application.
             base.OnSourceInitialized(e);
             var helper = new WindowInteropHelper(this);
             _source = HwndSource.FromHwnd(helper.Handle);
@@ -146,10 +163,7 @@ namespace Clipboard__ {
             if (this.IsKeyboardFocused) {
                 this.cbItemsListBox.SelectedIndex = (this.cbItemsListBox.SelectedIndex + 1) % this.cbItemsListBox.Items.Count;
             } else {
-                if (this.WindowState == WindowState.Minimized) {
-                    this.WindowState = WindowState.Normal;
-                }
-                this.Activate();
+                makeVisible();
             }
         }
 
@@ -166,10 +180,7 @@ namespace Clipboard__ {
         }
 
         private void Open_Click(object sender, RoutedEventArgs e) {
-            if (this.WindowState == WindowState.Minimized) {
-                this.WindowState = WindowState.Normal;
-            }
-            this.Activate();
+            makeVisible();
         }
 
         private void Quit_Click(object sender, RoutedEventArgs e) {
@@ -201,6 +212,33 @@ namespace Clipboard__ {
                     this.cbItemsListBox.SelectedIndex = this.cbItemsListBox.SelectedIndex - 1;
                 }
             }
+        }
+
+        private void makeVisible() {
+            if (this.WindowState == WindowState.Minimized) {
+                this.WindowState = WindowState.Normal;
+            }
+
+            var vdm = new VirtualDesktopManager();
+            var helper = new WindowInteropHelper(this);
+
+            //vdm.MoveWindowToDesktop(helper.Handle, vdm.GetCurrentDesktopId());
+            var desktops = VirtualDesktop.GetDesktops();
+            //this.MoveToDesktop(VirtualDesktop.Current);
+
+            this.Activate();
+        }
+
+        private void Clear_Click(object sender, RoutedEventArgs e) {
+            throw new NotImplementedException();
+        }
+
+        private void Copy_Click(object sender, RoutedEventArgs e) {
+            throw new NotImplementedException();
+        }
+
+        private void Remove_Click(object sender, RoutedEventArgs e) {
+            throw new NotImplementedException();
         }
     }
 }
